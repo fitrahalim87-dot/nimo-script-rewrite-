@@ -1,6 +1,6 @@
 {
-  "name": "Nimo Skrip Rewrite",
-  "description": "An AI-powered tool by Nimo to rewrite YouTube scripts organically while retaining core facts and chronologies.",
+  "name": "AI Script Rewriter",
+  "description": "An AI-powered tool to rewrite YouTube scripts organically while retaining core facts and chronologies.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

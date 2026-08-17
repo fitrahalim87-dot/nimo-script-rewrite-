@@ -1,42 +1,19 @@
-import { useState, useEffect } from 'react';
-import { Copy, Loader2, RefreshCw, Wand2, Eye, EyeOff, Key, ChevronDown, ChevronUp, Save } from 'lucide-react';
+import { useState } from 'react';
+import { Copy, Loader2, RefreshCw, Wand2, Eye, EyeOff, Key, ChevronDown, ChevronUp } from 'lucide-react';
 
 type StyleMode = 'Formal' | 'Santai Tongkrongan' | 'Storytelling' | 'Custom';
 
 export default function App() {
-  const [sourceScript, setSourceScript] = useState(() => localStorage.getItem('sourceScript') || '');
-  const [styleMode, setStyleMode] = useState<StyleMode>(() => (localStorage.getItem('styleMode') as StyleMode) || 'Formal');
-  const [customStyleRef, setCustomStyleRef] = useState(() => localStorage.getItem('customStyleRef') || '');
-  const [userApiKey, setUserApiKey] = useState(() => localStorage.getItem('userApiKey') || '');
+  const [sourceScript, setSourceScript] = useState('');
+  const [styleMode, setStyleMode] = useState<StyleMode>('Formal');
+  const [customStyleRef, setCustomStyleRef] = useState('');
+  const [userApiKey, setUserApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
   const [showApiKeyPanel, setShowApiKeyPanel] = useState(false);
   const [result, setResult] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-
-  // Sync to localStorage
-  useEffect(() => {
-    localStorage.setItem('sourceScript', sourceScript);
-    if (sourceScript.trim()) {
-      setIsSaved(true);
-      const timer = setTimeout(() => setIsSaved(false), 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [sourceScript]);
-
-  useEffect(() => {
-    localStorage.setItem('styleMode', styleMode);
-  }, [styleMode]);
-
-  useEffect(() => {
-    localStorage.setItem('customStyleRef', customStyleRef);
-  }, [customStyleRef]);
-
-  useEffect(() => {
-    localStorage.setItem('userApiKey', userApiKey);
-  }, [userApiKey]);
 
   const handleRewrite = async () => {
     if (!sourceScript.trim()) {
@@ -67,19 +44,7 @@ export default function App() {
         }),
       });
 
-      const contentType = response.headers.get('content-type');
-      let data: any = {};
-      
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        const text = await response.text();
-        // If it's HTML, we show a clean message, otherwise we show the text
-        if (text.includes('<!DOCTYPE html>') || text.includes('<html>')) {
-          throw new Error('Sistem tidak dapat terhubung ke server atau server sedang memuat ulang. Harap tunggu beberapa saat.');
-        }
-        throw new Error(text || 'Gagal menyusun ulang naskah (Server Error).');
-      }
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || 'Gagal menyusun ulang naskah.');
@@ -106,33 +71,18 @@ export default function App() {
       <div className="max-w-5xl mx-auto space-y-8">
         
         {/* Header Section */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center space-x-2.5 text-indigo-600 mb-1">
-              <img 
-                src="/src/assets/images/nimo_logo_1786925899163.jpg" 
-                alt="Nimo Logo" 
-                className="w-7 h-7 rounded-lg shadow-sm border border-indigo-100 object-cover"
-                referrerPolicy="no-referrer"
-              />
-              <span className="font-bold tracking-wider uppercase text-xs">Nimo Skrip Rewrite</span>
-            </div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
-              Amati, Tiru, Modifikasi
-            </h1>
-            <p className="text-base text-slate-600 max-w-xl leading-relaxed">
-              Ubah naskah mentah menjadi narasi matang yang lebih natural dan siap di-voiceover. 
-              Pertahankan kronologi, ciptakan gaya baru.
-            </p>
+        <header className="space-y-2">
+          <div className="inline-flex items-center justify-center space-x-2 text-indigo-600 mb-2">
+            <RefreshCw className="w-5 h-5" />
+            <span className="font-semibold tracking-wide uppercase text-sm">AI Script Rewriter</span>
           </div>
-          <div className="hidden md:block">
-            <img 
-              src="/src/assets/images/nimo_logo_1786925899163.jpg" 
-              alt="Nimo Skrip Rewrite Icon" 
-              className="w-16 h-16 rounded-2xl shadow-md border border-slate-200 object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">
+            Amati, Tiru, Modifikasi
+          </h1>
+          <p className="text-lg text-slate-600 max-w-2xl leading-relaxed">
+            Ubah naskah mentah menjadi narasi matang yang lebih natural dan siap di-voiceover. 
+            Pertahankan kronologi, ciptakan gaya baru.
+          </p>
         </header>
 
         {/* Main Interface Layout */}
@@ -203,17 +153,9 @@ export default function App() {
             {/* Source Script */}
             <div className="space-y-3">
               <div className="flex justify-between items-end">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="sourceScript" className="block text-sm font-semibold text-slate-800">
-                    Naskah Sumber
-                  </label>
-                  {isSaved && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full animate-fade-in transition-all">
-                      <Save className="w-3 h-3" />
-                      Tersimpan
-                    </span>
-                  )}
-                </div>
+                <label htmlFor="sourceScript" className="block text-sm font-semibold text-slate-800">
+                  Naskah Sumber
+                </label>
                 <span className="text-xs font-medium text-slate-500">
                   {sourceScript.length} karakter | {sourceScript.trim() ? sourceScript.trim().split(/\s+/).length : 0} kata
                 </span>
