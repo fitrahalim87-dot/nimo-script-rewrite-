@@ -40,10 +40,34 @@ export default function App() {
         }),
       });
 
-      const data = await response.json();
+      let data: any = null;
+      const contentType = response.headers.get('content-type') || '';
+
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error(
+              'Endpoint /api/rewrite tidak ditemukan (404). Jika di-deploy di Vercel, pastikan fungsi serverless api/rewrite.ts disertakan.'
+            );
+          }
+          throw new Error(`Respon server error (${response.status}): ${text.slice(0, 120)}`);
+        }
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { result: text };
+        }
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Gagal menyusun ulang naskah.');
+        throw new Error(data?.error || 'Gagal menyusun ulang naskah.');
+      }
+
+      if (!data?.result) {
+        throw new Error('Tidak ada respon teks yang dihasilkan dari AI.');
       }
 
       setResult(data.result);
