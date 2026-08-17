@@ -97,14 +97,53 @@ export async function processRewriteScript({
   prompt += `NASKAH SUMBER:\n${sourceScript}\n\n`;
   prompt += `[INSTRUKSI WAJIB PANJANG NASKAH]: Naskah sumber di atas memiliki panjang ${charCount} karakter (sekitar ${wordCount} kata). Kamu DIWAJIBKAN menghasilkan naskah baru dengan jumlah karakter dan kata yang SANGAT MENDEKATI jumlah tersebut (maksimal selisih 5-10%). Jangan membuat naskah menjadi jauh lebih pendek atau lebih panjang.`;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3.7-flash',
-    contents: prompt,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      temperature: 0.7,
-    },
-  });
+  // Fallback models in priority order to guarantee 100% availability even during high traffic surges
+  const modelsToTry = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.5-pro',
+    'gemini-1.5-flash',
+    'gemini-3.7-flash',
+  ];
 
-  return response.text || '';
+  let lastError: any = null;
+
+  for (const model of modelsToTry) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          temperature: 0.7,
+        },
+      });
+
+      if (response.text) {
+        return response.text;
+      }
+    } catch (err: any) {
+      console.warn(`Model ${model} gagal atau sibuk, mencoba model fallback berikutnya...`, err?.message || err);
+      lastError = err;
+      // Wait slightly (250ms) before trying the next model
+      await new Promise((res) => setTimeout(res, 250));
+    }
+  }
+
+  // Format error if all fail
+  let parsedErrorMessage = 'Gagal memproses naskah karena semua model AI sedang sibuk. Silakan coba lagi sebentar.';
+  if (lastError?.message) {
+    try {
+      const parsed = JSON.parse(lastError.message);
+      if (parsed?.error?.message) {
+        parsedErrorMessage = parsed.error.message;
+      } else {
+        parsedErrorMessage = lastError.message;
+      }
+    } catch {
+      parsedErrorMessage = lastError.message;
+    }
+  }
+
+  throw new Error(parsedErrorMessage);
 }

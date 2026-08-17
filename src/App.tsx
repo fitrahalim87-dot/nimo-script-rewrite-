@@ -63,7 +63,16 @@ export default function App() {
       }
 
       if (!response.ok) {
-        throw new Error(data?.error || 'Gagal menyusun ulang naskah.');
+        let msg = data?.error || 'Gagal menyusun ulang naskah.';
+        if (typeof msg === 'string' && (msg.startsWith('{') || msg.startsWith('['))) {
+          try {
+            const parsed = JSON.parse(msg);
+            msg = parsed?.error?.message || parsed?.message || msg;
+          } catch {
+            // keep msg as is
+          }
+        }
+        throw new Error(msg);
       }
 
       if (!data?.result) {
