@@ -67,7 +67,19 @@ export default function App() {
         }),
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type');
+      let data: any = {};
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        // If it's HTML, we show a clean message, otherwise we show the text
+        if (text.includes('<!DOCTYPE html>') || text.includes('<html>')) {
+          throw new Error('Sistem tidak dapat terhubung ke server atau server sedang memuat ulang. Harap tunggu beberapa saat.');
+        }
+        throw new Error(text || 'Gagal menyusun ulang naskah (Server Error).');
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Gagal menyusun ulang naskah.');
