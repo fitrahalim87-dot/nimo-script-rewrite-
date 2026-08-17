@@ -1,11 +1,10 @@
 import express from 'express';
 import path from 'path';
-import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   app.use(express.json());
 
@@ -26,7 +25,14 @@ async function startServer() {
         return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
       }
 
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          },
+        },
+      });
 
       const systemInstruction = `Kamu adalah AI khusus untuk membantu kreator YouTube mengolah ulang naskah narasi menjadi versi yang lebih natural, menarik, dan memiliki gaya penyampaian yang berbeda.
 
@@ -103,7 +109,7 @@ Jangan otomatis menyalin dialog panjang, ubah ke narasi tidak langsung jika memu
 
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.7-flash',
         contents: prompt,
         config: {
           systemInstruction,
@@ -119,6 +125,7 @@ Jangan otomatis menyalin dialog panjang, ubah ke narasi tidak langsung jika memu
   });
 
   if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
