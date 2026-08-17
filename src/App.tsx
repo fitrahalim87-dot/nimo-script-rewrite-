@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Loader2, RefreshCw, Wand2, Eye, EyeOff, Key, ChevronDown, ChevronUp } from 'lucide-react';
+import { Copy, Loader2, RefreshCw, Wand2 } from 'lucide-react';
 
 type StyleMode = 'Formal' | 'Santai Tongkrongan' | 'Storytelling' | 'Custom';
 
@@ -7,9 +7,6 @@ export default function App() {
   const [sourceScript, setSourceScript] = useState('');
   const [styleMode, setStyleMode] = useState<StyleMode>('Formal');
   const [customStyleRef, setCustomStyleRef] = useState('');
-  const [userApiKey, setUserApiKey] = useState('');
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [showApiKeyPanel, setShowApiKeyPanel] = useState(false);
   const [result, setResult] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
@@ -40,7 +37,6 @@ export default function App() {
           sourceScript,
           styleMode,
           customStyleRef: styleMode === 'Custom' ? customStyleRef : undefined,
-          userApiKey: userApiKey.trim() || undefined,
         }),
       });
 
@@ -91,65 +87,6 @@ export default function App() {
           {/* Left Column: Inputs */}
           <div className="space-y-6 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
             
-            {/* API Key Input */}
-            <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
-              <button
-                type="button"
-                onClick={() => setShowApiKeyPanel(!showApiKeyPanel)}
-                className="w-full flex justify-between items-center p-4 hover:bg-slate-100/75 transition-colors text-left"
-              >
-                <span className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                  <Key className="w-4 h-4 text-indigo-600" />
-                  Masukkan API Key Gemini
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-slate-500 font-medium bg-slate-200/60 px-2 py-0.5 rounded">
-                    {userApiKey ? 'Key Anda' : 'Key Sistem'}
-                  </span>
-                  {showApiKeyPanel ? (
-                    <ChevronUp className="w-4 h-4 text-slate-500" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-slate-500" />
-                  )}
-                </div>
-              </button>
-
-              {showApiKeyPanel && (
-                <div className="p-4 pt-0 space-y-3 border-t border-slate-200/50 animate-in fade-in duration-200">
-                  <div className="relative mt-3">
-                    <input
-                      id="userApiKey"
-                      type={showApiKey ? 'text' : 'password'}
-                      value={userApiKey}
-                      onChange={(e) => setUserApiKey(e.target.value)}
-                      placeholder="AI_zaSy..."
-                      className="w-full pl-3 pr-10 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-mono"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowApiKey(!showApiKey)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 transition-colors"
-                      title={showApiKey ? 'Sembunyikan' : 'Tampilkan'}
-                    >
-                      {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  
-                  {/* Panduan Membuat API Key */}
-                  <div className="pt-2 border-t border-slate-200 space-y-1.5">
-                    <p className="text-[11px] font-semibold text-slate-700">Cara Mendapatkan API Key Gemini Gratis:</p>
-                    <ol className="text-[11px] text-slate-600 list-decimal list-inside space-y-1 leading-normal">
-                      <li>Buka <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-semibold inline-flex items-center gap-0.5">Google AI Studio (klik di sini)</a></li>
-                      <li>Login menggunakan Akun Google Anda.</li>
-                      <li>Klik tombol <strong className="text-slate-700">"Get API Key"</strong> di pojok kiri atas.</li>
-                      <li>Klik <strong className="text-slate-700">"Create API Key"</strong> lalu pilih proyek dan salin kuncinya.</li>
-                      <li>Tempel (paste) kode kunci tersebut pada kolom di atas!</li>
-                    </ol>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* Source Script */}
             <div className="space-y-3">
               <div className="flex justify-between items-end">

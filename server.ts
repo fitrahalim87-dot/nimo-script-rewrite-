@@ -11,7 +11,7 @@ async function startServer() {
 
   app.post('/api/rewrite', async (req, res) => {
     try {
-      const { sourceScript, styleMode, customStyleRef, userApiKey } = req.body;
+      const { sourceScript, styleMode, customStyleRef } = req.body;
 
       if (!sourceScript || !styleMode) {
         return res.status(400).json({ error: 'sourceScript and styleMode are required.' });
@@ -21,12 +21,12 @@ async function startServer() {
         return res.status(400).json({ error: 'customStyleRef is required when styleMode is Custom.' });
       }
 
-      const apiKeyToUse = userApiKey?.trim() || process.env.GEMINI_API_KEY;
-      if (!apiKeyToUse) {
-        return res.status(400).json({ error: 'API Key Gemini tidak ditemukan. Harap masukkan API Key Anda sendiri atau pastikan sistem dikonfigurasi.' });
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
       }
 
-      const ai = new GoogleGenAI({ apiKey: apiKeyToUse });
+      const ai = new GoogleGenAI({ apiKey });
 
       const systemInstruction = `Kamu adalah AI khusus untuk membantu kreator YouTube mengolah ulang naskah narasi menjadi versi yang lebih natural, menarik, dan memiliki gaya penyampaian yang berbeda.
 
